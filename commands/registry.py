@@ -5,7 +5,9 @@ from commands.string_cmds import (
     del_command,
     exists_command,
     dbsize_command,
-    flushall_command
+    flushall_command,
+    expire_command,
+    ttl_command
 )
 
 
@@ -17,6 +19,8 @@ COMMANDS = {
     "EXISTS": exists_command,
     "DBSIZE": dbsize_command,
     "FLUSHALL": flushall_command,
+    "EXPIRE": expire_command,
+    "TTL": ttl_command
 }
 
 

@@ -3,12 +3,27 @@ def ping_command(store, args):
 
 
 def set_command(store, args):
-    if len(args) != 2:
+
+    if len(args) < 2:
         return b"-ERR wrong number of arguments\r\n"
 
-    key, value = args
+    key = args[0]
+    value = args[1]
 
     store.set(key, value)
+
+    if len(args) == 4:
+
+        option = args[2].upper()
+
+        if option == "EX":
+
+            seconds = int(args[3])
+
+            store.set_expiry(
+                key,
+                seconds
+            )
 
     return b"+OK\r\n"
 
@@ -57,3 +72,25 @@ def flushall_command(store, args):
     store.flushall()
 
     return b"+OK\r\n"
+def expire_command(store, args):
+
+    if len(args) != 2:
+        return b"-ERR wrong number of arguments\r\n"
+
+    key, seconds = args
+
+    success = store.set_expiry(
+        key,
+        int(seconds)
+    )
+
+    return f":{int(success)}\r\n".encode()
+
+def ttl_command(store, args):
+
+    if len(args) != 1:
+        return b"-ERR wrong number of arguments\r\n"
+
+    value = store.ttl(args[0])
+
+    return f":{value}\r\n".encode()
