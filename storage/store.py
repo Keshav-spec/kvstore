@@ -8,12 +8,20 @@ class Store:
 
     def set(self, key: str, value: str):
         with self.lock:
-            self.data[key] = value
+            self.data[key] = {
+                "value": value,
+                "expiry": None
+            }
             return True
 
     def get(self, key: str):
         with self.lock:
-            return self.data.get(key)
+            entry = self.data.get(key)
+
+            if entry is None:
+                return None
+
+            return entry["value"]
 
     def delete(self, key: str):
         with self.lock:

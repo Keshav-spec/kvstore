@@ -1,33 +1,54 @@
 from server.parser import RESPParser
 from commands.registry import dispatch
 
-
 parser = RESPParser()
 
 
 def handle_client(conn, store):
+    buffer = b""
+
     try:
         while True:
 
             data = conn.recv(4096)
 
-            print("RAW:", repr(data))
+            if not data:
+                break
 
-            command = parser.parse(data)
+            buffer += data
 
-            print("PARSED:", command)
+            # Debug logs (remove later if desired)
+            print(f"RECEIVED: {repr(data)}")
+            print(f"BUFFER: {repr(buffer)}")
 
-            response = dispatch(store, command)
+            while True:
 
-            print("RESPONSE:", response)
+                command, consumed = parser.parse(buffer)
 
-            conn.sendall(response)
+                if command is None:
+                    break
+
+                print(f"COMMAND: {command}")
+
+                buffer = buffer[consumed:]
+
+                response = dispatch(store, command)
+
+                print(f"RESPONSE: {response}")
+
+                conn.sendall(response)
 
     except Exception as e:
+        import traceback
+
+        traceback.print_exc()
 
         error = f"-ERR {str(e)}\r\n"
 
-        conn.sendall(error.encode())
+        try:
+            conn.sendall(error.encode())
+        except Exception:
+            pass
 
     finally:
         conn.close()

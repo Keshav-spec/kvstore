@@ -1,26 +1,65 @@
 class RESPParser:
-    def parse(self, data: bytes):
-        text = data.decode()
 
-        lines = text.split("\r\n")
+    def parse(self, buffer: bytes):
 
-        if not lines[0].startswith("*"):
-            raise ValueError("Invalid RESP Array")
+        if not buffer:
+            return None, 0
 
-        num_elements = int(lines[0][1:])
+        try:
+            pos = 0
 
-        result = []
+            if buffer[pos:pos+1] != b"*":
+                return None, 0
 
-        idx = 1
+            end = buffer.find(b"\r\n", pos)
 
-        for _ in range(num_elements):
-            if not lines[idx].startswith("$"):
-                raise ValueError("Expected bulk string")
+            if end == -1:
+                return None, 0
 
-            idx += 1
+            num_elements = int(
+                buffer[pos+1:end]
+            )
 
-            result.append(lines[idx])
+            pos = end + 2
 
-            idx += 1
+            result = []
 
-        return result
+            for _ in range(num_elements):
+
+                if pos >= len(buffer):
+                    return None, 0
+
+                if buffer[pos:pos+1] != b"$":
+                    raise ValueError(
+                        "Expected bulk string"
+                    )
+
+                end = buffer.find(
+                    b"\r\n",
+                    pos
+                )
+
+                if end == -1:
+                    return None, 0
+
+                length = int(
+                    buffer[pos+1:end]
+                )
+
+                pos = end + 2
+
+                if len(buffer) < pos + length + 2:
+                    return None, 0
+
+                value = buffer[
+                    pos:pos+length
+                ].decode()
+
+                result.append(value)
+
+                pos += length + 2
+
+            return result, pos
+
+        except Exception:
+            return None, 0
