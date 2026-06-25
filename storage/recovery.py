@@ -6,13 +6,11 @@ def recover(store, wal):
     Rebuild the in-memory store from the write-ahead log.
     """
 
-    print("Recovering database...")
+   
 
     records = wal.replay()
 
     for record in records:
-
-        print(record)
 
         cmd = record["cmd"]
 
@@ -25,6 +23,12 @@ def recover(store, wal):
                 expiry is not None
                 and expiry <= int(time.time())
             ):
+                # A later SET with an expired TTL should remove
+                # any previously restored version of this key.
+                store.delete(
+                    record["key"],
+                    log=False
+                )
                 continue
 
             store.set(

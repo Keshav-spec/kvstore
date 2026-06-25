@@ -8,9 +8,10 @@ class ExpiryCleaner:
         self.store = store
         self.running = False
 
-    def start(self):
+    def start(self, verbose=False):
 
-        print("Expiry cleaner started")
+        if verbose:
+            print("Expiry cleaner started")
 
         self.running = True
 

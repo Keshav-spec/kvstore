@@ -1,53 +1,90 @@
+import unittest
+
 from storage.store import Store
 
 
-def test_set_and_get():
-    store = Store()
+class TestStore(unittest.TestCase):
 
-    store.set("name", "keshav")
+    def setUp(self):
+        self.store = Store()
 
-    assert store.get("name") == "keshav"
+    def test_set_and_get(self):
+
+        self.store.set("name", "Keshav")
+
+        self.assertEqual(
+            self.store.get("name"),
+            "Keshav"
+        )
+
+    def test_get_missing_key(self):
+
+        self.assertIsNone(
+            self.store.get("missing")
+        )
+
+    def test_delete_existing_key(self):
+
+        self.store.set("name", "Keshav")
+
+        deleted = self.store.delete("name")
+
+        self.assertEqual(
+            deleted,
+            1
+        )
+
+        self.assertIsNone(
+            self.store.get("name")
+        )
+
+    def test_delete_missing_key(self):
+
+        deleted = self.store.delete("unknown")
+
+        self.assertEqual(
+            deleted,
+            0
+        )
+
+    def test_exists(self):
+
+        self.store.set("city", "Chennai")
+
+        self.assertTrue(
+            self.store.exists("city")
+        )
+
+        self.assertFalse(
+            self.store.exists("Delhi")
+        )
+
+    def test_dbsize(self):
+
+        self.store.set("A", "1")
+        self.store.set("B", "2")
+
+        self.assertEqual(
+            self.store.dbsize(),
+            2
+        )
+
+    def test_flushall(self):
+
+        self.store.set("A", "1")
+        self.store.set("B", "2")
+
+        self.store.flushall()
+
+        self.assertEqual(
+            self.store.dbsize(),
+            0
+        )
+
+        self.assertIsNone(
+            self.store.get("A")
+        )
 
 
-def test_delete_existing_key():
-    store = Store()
-
-    store.set("name", "keshav")
-
-    assert store.delete("name") == 1
-    assert store.get("name") is None
-
-
-def test_delete_missing_key():
-    store = Store()
-
-    assert store.delete("unknown") == 0
-
-
-def test_exists():
-    store = Store()
-
-    store.set("name", "keshav")
-
-    assert store.exists("name") is True
-    assert store.exists("city") is False
-
-
-def test_dbsize():
-    store = Store()
-
-    store.set("a", "1")
-    store.set("b", "2")
-
-    assert store.dbsize() == 2
-
-
-def test_flushall():
-    store = Store()
-
-    store.set("a", "1")
-    store.set("b", "2")
-
-    store.flushall()
-
-    assert store.dbsize() == 0
+if __name__ == "__main__":
+    unittest.main()

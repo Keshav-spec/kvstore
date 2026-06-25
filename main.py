@@ -49,7 +49,7 @@ def main():
     recover(store, wal)
 
     cleaner = ExpiryCleaner(store)
-    cleaner.start()
+    cleaner.start(verbose=True)
 
     server = RedisLiteServer()
 

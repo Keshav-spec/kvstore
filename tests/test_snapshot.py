@@ -9,5 +9,5 @@ store.set_expiry("city", 60)
 
 snapshot = store.snapshot()
 
-for record in snapshot:
-    print(record)
+# for record in snapshot:
+#     print(record)

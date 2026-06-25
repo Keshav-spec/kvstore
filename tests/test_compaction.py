@@ -15,4 +15,4 @@ snapshot = store.snapshot()
 
 wal.compact(snapshot)
 
-print(wal.replay())
+# print(wal.replay())

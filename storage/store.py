@@ -57,8 +57,6 @@ class Store:
         with self.lock:
 
             entry = self.data.get(key)
-            if entry:
-                print(f"[GET] {key} expiry = {entry.expiry}")
 
             if entry is None:
                 return None
@@ -153,7 +151,7 @@ class Store:
                 return -2
 
             expiry = self.data[key].expiry
-            print(f"[TTL] {key} expiry = {expiry}")
+            
 
             if expiry is None:
                 return -1
@@ -187,7 +185,7 @@ class Store:
 
             for key in expired:
 
-                print(f"Deleting expired key: {key}")
+                
 
                 del self.data[key]
                 self.cache.remove(key)
