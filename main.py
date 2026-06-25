@@ -1,7 +1,7 @@
 from storage.store import Store
 from storage.ttl import ExpiryCleaner
 from storage.wal import WriteAheadLog
-
+from storage.recovery import recover
 from server.server import RedisLiteServer
 
 
@@ -42,21 +42,17 @@ def replay_wal(store, wal):
 
 def main():
 
-    # Create WAL
     wal = WriteAheadLog()
 
-    # Store owns the WAL
     store = Store(wal)
 
-    # Recover previous data
-    replay_wal(store, wal)
+    recover(store, wal)
 
-    # Start expiry cleaner
     cleaner = ExpiryCleaner(store)
     cleaner.start()
 
-    # Start server
     server = RedisLiteServer()
+
     server.start(store)
 
 

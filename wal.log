@@ -1,3 +1,5 @@
 SET name Keshav
 SET city Chennai
-DEL city
+SET a 1
+SET b 2
+DEL a
