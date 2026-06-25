@@ -18,9 +18,6 @@ def handle_client(conn, store):
 
             buffer += data
 
-            # Debug logs (remove later if desired)
-            print(f"RECEIVED: {repr(data)}")
-            print(f"BUFFER: {repr(buffer)}")
 
             while True:
 
@@ -29,7 +26,6 @@ def handle_client(conn, store):
                 if command is None:
                     break
 
-                print(f"COMMAND: {command}")
 
                 buffer = buffer[consumed:]
 
@@ -37,8 +33,6 @@ def handle_client(conn, store):
                     store,
                     command
                 )
-
-                print(f"RESPONSE: {response}")
 
                 conn.sendall(response)
 

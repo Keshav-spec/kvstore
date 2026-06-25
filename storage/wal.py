@@ -1,6 +1,5 @@
 import os
-
-from config import WAL_FILE
+from config import WAL_FILE, MAX_WAL_SIZE
 
 
 class WriteAheadLog:
@@ -148,3 +147,10 @@ class WriteAheadLog:
             temp_file,
             self.filename
         )
+    
+    def needs_compaction(self):
+
+        size = os.path.getsize(self.filename)
+
+
+        return size >= MAX_WAL_SIZE

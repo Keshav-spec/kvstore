@@ -3,11 +3,12 @@ import time
 
 from storage.models import Entry
 from storage.cache import LRUCache
+from config import DEFAULT_CACHE_SIZE
 
 
 class Store:
 
-    def __init__(self, wal=None, capacity=3):
+    def __init__(self, wal=None, capacity=DEFAULT_CACHE_SIZE):
 
         self.data = {}
         self.lock = threading.RLock()
@@ -48,7 +49,7 @@ class Store:
 
             if evicted is not None:
                 self.data.pop(evicted, None)
-
+            self.compact_wal()
             return True
 
     def get(self, key):
@@ -91,7 +92,7 @@ class Store:
 
                 del self.data[key]
                 self.cache.remove(key)
-
+                self.compact_wal()
                 return 1
 
             return 0
@@ -119,7 +120,7 @@ class Store:
 
             # Reset cache
             self.cache = LRUCache(self.cache.capacity)
-
+            self.compact_wal()
             return True
 
     def set_expiry(self, key, seconds, log=True):
@@ -209,3 +210,19 @@ class Store:
                 })
 
             return snapshot
+    
+    def compact_wal(self):
+        """
+        Compact the write-ahead log if it has grown too large.
+        """
+        
+        if self.wal is None:
+            return
+
+        if self.wal.needs_compaction():
+
+            print("Compacting WAL...")
+
+            snapshot = self.snapshot()
+
+            self.wal.compact(snapshot)

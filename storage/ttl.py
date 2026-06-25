@@ -25,7 +25,7 @@ class ExpiryCleaner:
 
         while self.running:
 
-            print("Cleaner tick")
+            
 
             self.store.cleanup_expired()
 
