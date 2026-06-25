@@ -47,7 +47,6 @@ def get_command(store, args):
 def del_command(store, args):
     if len(args) != 1:
         return b"-ERR wrong number of arguments\r\n"
-
     deleted = store.delete(args[0])
 
     return f":{deleted}\r\n".encode()

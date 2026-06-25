@@ -1,6 +1,7 @@
 from server.parser import RESPParser
 from commands.registry import dispatch
 
+
 parser = RESPParser()
 
 
@@ -32,7 +33,10 @@ def handle_client(conn, store):
 
                 buffer = buffer[consumed:]
 
-                response = dispatch(store, command)
+                response = dispatch(
+                    store,
+                    command
+                )
 
                 print(f"RESPONSE: {response}")
 
