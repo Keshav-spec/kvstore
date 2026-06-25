@@ -35,3 +35,6 @@ SET B 2
 SET C 3
 FLUSHALL
 SET D 4
+SET|name|Keshav|
+SET|city|Chennai|
+SET|token|abc|

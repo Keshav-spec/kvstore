@@ -1,38 +1,47 @@
+import time
+
+
 def recover(store, wal):
     """
     Rebuild the in-memory store from the write-ahead log.
     """
 
-    commands = wal.replay()
     print("Recovering database...")
-    for command in commands:
-        print(command)
-        if not command:
-            continue
 
-        cmd = command[0].upper()
+    records = wal.replay()
+
+    for record in records:
+
+        print(record)
+
+        cmd = record["cmd"]
 
         if cmd == "SET":
 
-            if len(command) >= 3:
+            expiry = record.get("expiry")
 
-                key = command[1]
-                value = command[2]
+            # Skip expired keys
+            if (
+                expiry is not None
+                and expiry <= int(time.time())
+            ):
+                continue
 
-                store.set(
-                    key,
-                    value,
-                    log=False
-                )
+            store.set(
+                record["key"],
+                record["value"],
+                log=False
+            )
+
+            if expiry is not None:
+                store.data[record["key"]].expiry = expiry
 
         elif cmd == "DEL":
 
-            if len(command) >= 2:
-
-                store.delete(
-                    command[1],
-                    log=False
-                )
+            store.delete(
+                record["key"],
+                log=False
+            )
 
         elif cmd == "FLUSHALL":
 

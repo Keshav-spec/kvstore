@@ -1,5 +1,7 @@
 import os
+
 from config import WAL_FILE
+
 
 class WriteAheadLog:
 
@@ -10,14 +12,37 @@ class WriteAheadLog:
         if not os.path.exists(self.filename):
             open(self.filename, "w").close()
 
-    def append(self, command, args):
+    def append(self, command, key=None, value=None, expiry=None):
+        """
+        Append one operation to the WAL.
 
-        line = command
+        Format:
 
-        if args:
-            line += " " + " ".join(map(str, args))
+        SET|key|value|expiry
 
-        line += "\n"
+        DEL|key
+
+        FLUSHALL
+        """
+
+        if command == "SET":
+
+            if expiry is None:
+                expiry = ""
+
+            line = f"SET|{key}|{value}|{expiry}\n"
+
+        elif command == "DEL":
+
+            line = f"DEL|{key}\n"
+
+        elif command == "FLUSHALL":
+
+            line = "FLUSHALL\n"
+
+        else:
+
+            raise ValueError(f"Unknown WAL command: {command}")
 
         with open(
             self.filename,
@@ -26,12 +51,16 @@ class WriteAheadLog:
         ) as file:
 
             file.write(line)
-
             file.flush()
 
     def replay(self):
+        """
+        Read the WAL.
 
-        commands = []
+        Returns a list of parsed records.
+        """
+
+        records = []
 
         with open(
             self.filename,
@@ -46,11 +75,38 @@ class WriteAheadLog:
                 if not line:
                     continue
 
-                commands.append(
-                    line.split()
-                )
+                parts = line.split("|")
 
-        return commands
+                command = parts[0]
+
+                if command == "SET":
+
+                    expiry = None
+
+                    if len(parts) > 3 and parts[3] != "":
+                        expiry = int(parts[3])
+
+                    records.append({
+                        "cmd": "SET",
+                        "key": parts[1],
+                        "value": parts[2],
+                        "expiry": expiry
+                    })
+
+                elif command == "DEL":
+
+                    records.append({
+                        "cmd": "DEL",
+                        "key": parts[1]
+                    })
+
+                elif command == "FLUSHALL":
+
+                    records.append({
+                        "cmd": "FLUSHALL"
+                    })
+
+        return records
 
     def clear(self):
 

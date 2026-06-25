@@ -1,9 +1,14 @@
 from storage.wal import WriteAheadLog
 
-wal = WriteAheadLog()
+wal = WriteAheadLog("test.wal")
+wal.clear()
 
-wal.append("SET", ["name", "Keshav"])
-wal.append("SET", ["city", "Chennai"])
-wal.append("DEL", ["city"])
+wal.append("SET", "name", "Keshav")
+wal.append("SET", "token", "abc", 1750865000)
+wal.append("DEL", "name")
+wal.append("FLUSHALL")
 
-print(wal.replay())
+records = wal.replay()
+
+for record in records:
+    print(record)

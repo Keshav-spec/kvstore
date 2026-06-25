@@ -18,9 +18,17 @@ class Store:
     def set(self, key: str, value: str, log=True):
 
         if log and self.wal:
+
+            expiry = None
+
+            if key in self.data:
+                expiry = self.data[key].expiry
+
             self.wal.append(
-                "SET",
-                [key, value]
+                command="SET",
+                key=key,
+                value=value,
+                expiry=expiry
             )
 
         with self.lock:
@@ -63,8 +71,8 @@ class Store:
 
         if log and self.wal:
             self.wal.append(
-                "DEL",
-                [key]
+                command="DEL",
+                key=key
             )
 
         with self.lock:
@@ -92,8 +100,7 @@ class Store:
 
         if log and self.wal:
             self.wal.append(
-                "FLUSHALL",
-                []
+                command="FLUSHALL"
             )
 
         with self.lock:
