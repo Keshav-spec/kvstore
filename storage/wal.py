@@ -4,17 +4,18 @@ import os
 class WriteAheadLog:
 
     def __init__(self, filename="wal.log"):
+
         self.filename = filename
 
-        if not os.path.exists(filename):
-            open(filename, "a").close()
-    
+        if not os.path.exists(self.filename):
+            open(self.filename, "w").close()
+
     def append(self, command, args):
 
         line = command
 
         if args:
-            line += " " + " ".join(args)
+            line += " " + " ".join(map(str, args))
 
         line += "\n"
 
@@ -22,11 +23,12 @@ class WriteAheadLog:
             self.filename,
             "a",
             encoding="utf-8"
-        ) as f:
+        ) as file:
 
-            f.write(line)
+            file.write(line)
 
-            f.flush()
+            file.flush()
+
     def replay(self):
 
         commands = []
@@ -35,9 +37,9 @@ class WriteAheadLog:
             self.filename,
             "r",
             encoding="utf-8"
-        ) as f:
+        ) as file:
 
-            for line in f:
+            for line in file:
 
                 line = line.strip()
 
@@ -49,3 +51,10 @@ class WriteAheadLog:
                 )
 
         return commands
+
+    def clear(self):
+
+        open(
+            self.filename,
+            "w"
+        ).close()
