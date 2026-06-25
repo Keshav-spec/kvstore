@@ -33,7 +33,15 @@ class Store:
 
         with self.lock:
 
-            self.data[key] = Entry(value=value)
+            old_expiry = None
+
+            if key in self.data:
+                old_expiry = self.data[key].expiry
+
+            self.data[key] = Entry(
+                value=value,
+                expiry=old_expiry
+            )
 
             # Update LRU
             evicted = self.cache.touch(key)
@@ -48,6 +56,8 @@ class Store:
         with self.lock:
 
             entry = self.data.get(key)
+            if entry:
+                print(f"[GET] {key} expiry = {entry.expiry}")
 
             if entry is None:
                 return None
@@ -112,16 +122,25 @@ class Store:
 
             return True
 
-    def set_expiry(self, key, seconds):
+    def set_expiry(self, key, seconds, log=True):
 
         with self.lock:
 
             if key not in self.data:
                 return False
 
-            self.data[key].expiry = (
-                int(time.time()) + int(seconds)
-            )
+            expiry = int(time.time()) + int(seconds)
+
+            self.data[key].expiry = expiry
+
+            if log and self.wal:
+
+                self.wal.append(
+                    command="SET",
+                    key=key,
+                    value=self.data[key].value,
+                    expiry=expiry
+                )
 
             return True
 
@@ -133,6 +152,7 @@ class Store:
                 return -2
 
             expiry = self.data[key].expiry
+            print(f"[TTL] {key} expiry = {expiry}")
 
             if expiry is None:
                 return -1
@@ -170,3 +190,22 @@ class Store:
 
                 del self.data[key]
                 self.cache.remove(key)
+    
+    def snapshot(self):
+        """
+        Return a snapshot of the current database.
+        """
+
+        with self.lock:
+
+            snapshot = []
+
+            for key, entry in self.data.items():
+
+                snapshot.append({
+                    "key": key,
+                    "value": entry.value,
+                    "expiry": entry.expiry
+                })
+
+            return snapshot

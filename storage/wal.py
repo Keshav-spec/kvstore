@@ -114,3 +114,37 @@ class WriteAheadLog:
             self.filename,
             "w"
         ).close()
+    
+    def compact(self, snapshot):
+        """
+        Rewrite the WAL using the current database snapshot.
+        """
+
+        temp_file = self.filename + ".tmp"
+
+        with open(
+            temp_file,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            for record in snapshot:
+
+                expiry = record["expiry"]
+
+                if expiry is None:
+                    expiry = ""
+
+                line = (
+                    f"SET|"
+                    f"{record['key']}|"
+                    f"{record['value']}|"
+                    f"{expiry}\n"
+                )
+
+                file.write(line)
+
+        os.replace(
+            temp_file,
+            self.filename
+        )
