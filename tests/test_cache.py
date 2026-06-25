@@ -1,26 +1,19 @@
-from storage.cache import Node, DoublyLinkedList
+from storage.cache import LRUCache
 
-dll = DoublyLinkedList()
+cache = LRUCache(3)
 
-a = Node("A")
-b = Node("B")
-c = Node("C")
+cache.touch("A")
+cache.touch("B")
+cache.touch("C")
 
-dll.add_to_front(a)
-dll.add_to_front(b)
-dll.add_to_front(c)
+cache.list.display()
 
-print("Initial:")
-dll.display()
+cache.touch("A")
 
-dll.move_to_front(a)
+cache.list.display()
 
-print("\nAfter moving A to front:")
-dll.display()
+evicted = cache.touch("D")
 
-removed = dll.remove_tail()
+print("Evicted:", evicted)
 
-print(f"\nRemoved: {removed.key}")
-
-print("\nRemaining:")
-dll.display()
+cache.list.display()

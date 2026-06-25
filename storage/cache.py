@@ -99,3 +99,62 @@ class DoublyLinkedList:
             current = current.next
 
         print()
+
+class LRUCache:
+
+    def __init__(self, capacity: int):
+
+        self.capacity = capacity
+
+        self.list = DoublyLinkedList()
+
+        self.nodes = {}
+
+    def touch(self, key: str):
+        """
+        Mark a key as recently used.
+        """
+
+        if key in self.nodes:
+
+            node = self.nodes[key]
+
+            self.list.move_to_front(node)
+
+            return None
+
+        node = Node(key)
+
+        self.list.add_to_front(node)
+
+        self.nodes[key] = node
+
+        if len(self.nodes) > self.capacity:
+
+            return self.evict()
+
+        return None
+
+    def remove(self, key: str):
+
+        if key not in self.nodes:
+            return
+
+        node = self.nodes.pop(key)
+
+        self.list.remove(node)
+
+    def evict(self):
+
+        node = self.list.remove_tail()
+
+        if node is None:
+            return None
+
+        del self.nodes[node.key]
+
+        return node.key
+
+    def contains(self, key: str):
+
+        return key in self.nodes
