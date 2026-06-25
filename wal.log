@@ -3,3 +3,35 @@ SET city Chennai
 SET a 1
 SET b 2
 DEL a
+DEL self.data[key]
+DEL self.data[key]
+DEL self.data[key]
+DEL self.data[key]
+SET A 1
+SET B 2
+SET C 3
+SET D 4
+SET A 1
+SET B 2
+SET C 3
+SET D 4
+SET A 1
+SET B 2
+SET C 3
+SET A 100
+SET D 4
+SET B 2
+DEL A
+SET C 3
+SET D 4
+SET A 1
+SET B 2
+DEL A
+SET C 3
+SET D 4
+SET temp hello
+SET A 1
+SET B 2
+SET C 3
+FLUSHALL
+SET D 4

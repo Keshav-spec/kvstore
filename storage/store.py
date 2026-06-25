@@ -1,14 +1,19 @@
 import threading
 import time
+
 from storage.models import Entry
+from storage.cache import LRUCache
+
 
 class Store:
 
-    def __init__(self, wal=None):
+    def __init__(self, wal=None, capacity=3):
 
         self.data = {}
         self.lock = threading.RLock()
+
         self.wal = wal
+        self.cache = LRUCache(capacity)
 
     def set(self, key: str, value: str, log=True):
 
@@ -22,6 +27,12 @@ class Store:
 
             self.data[key] = Entry(value=value)
 
+            # Update LRU
+            evicted = self.cache.touch(key)
+
+            if evicted is not None:
+                self.data.pop(evicted, None)
+
             return True
 
     def get(self, key):
@@ -33,13 +44,18 @@ class Store:
             if entry is None:
                 return None
 
-            expiry = entry.expiry
-
-            if expiry is not None and expiry <= int(time.time()):
+            if (
+                entry.expiry is not None
+                and entry.expiry <= int(time.time())
+            ):
 
                 del self.data[key]
+                self.cache.remove(key)
 
                 return None
+
+            # Mark as recently used
+            self.cache.touch(key)
 
             return entry.value
 
@@ -54,7 +70,10 @@ class Store:
         with self.lock:
 
             if key in self.data:
+
                 del self.data[key]
+                self.cache.remove(key)
+
                 return 1
 
             return 0
@@ -81,6 +100,9 @@ class Store:
 
             self.data.clear()
 
+            # Reset cache
+            self.cache = LRUCache(self.cache.capacity)
+
             return True
 
     def set_expiry(self, key, seconds):
@@ -103,7 +125,7 @@ class Store:
             if key not in self.data:
                 return -2
 
-            expiry = self.data[key]["expiry"]
+            expiry = self.data[key].expiry
 
             if expiry is None:
                 return -1
@@ -113,6 +135,7 @@ class Store:
             if remaining <= 0:
 
                 del self.data[key]
+                self.cache.remove(key)
 
                 return -2
 
@@ -124,17 +147,19 @@ class Store:
 
             now = int(time.time())
 
-            expired_keys = []
+            expired = []
 
             for key, entry in self.data.items():
 
-                expiry = entry.expiry
+                if (
+                    entry.expiry is not None
+                    and entry.expiry <= now
+                ):
+                    expired.append(key)
 
-                if expiry is not None and expiry <= now:
-                    expired_keys.append(key)
-
-            for key in expired_keys:
+            for key in expired:
 
                 print(f"Deleting expired key: {key}")
 
                 del self.data[key]
+                self.cache.remove(key)
