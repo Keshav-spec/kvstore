@@ -1,15 +1,17 @@
 import socket
 import threading
-
+from config import HOST, PORT
 from server.connection import handle_client
+from logger import logger
 
+logger.info("Client connected")
 
 class RedisLiteServer:
 
     def __init__(
         self,
-        host="127.0.0.1",
-        port=6399
+        host=HOST,
+        port=PORT
     ):
         self.host = host
         self.port = port
@@ -40,10 +42,6 @@ class RedisLiteServer:
         while True:
 
             conn, addr = server.accept()
-
-            print(
-                f"Client connected: {addr}"
-            )
 
             thread = threading.Thread(
                 target=handle_client,

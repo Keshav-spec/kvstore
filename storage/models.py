@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
 class Entry:
     value: str
-    expiry: int | None = None
+    expiry: Optional[int] = None
+    node: Optional["Node"] = None

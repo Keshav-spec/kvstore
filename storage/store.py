@@ -1,6 +1,6 @@
 import threading
 import time
-
+from storage.models import Entry
 
 class Store:
 
@@ -20,10 +20,7 @@ class Store:
 
         with self.lock:
 
-            self.data[key] = {
-                "value": value,
-                "expiry": None
-            }
+            self.data[key] = Entry(value=value)
 
             return True
 
@@ -36,7 +33,7 @@ class Store:
             if entry is None:
                 return None
 
-            expiry = entry["expiry"]
+            expiry = entry.expiry
 
             if expiry is not None and expiry <= int(time.time()):
 
@@ -44,7 +41,7 @@ class Store:
 
                 return None
 
-            return entry["value"]
+            return entry.value
 
     def delete(self, key: str, log=True):
 
@@ -93,7 +90,7 @@ class Store:
             if key not in self.data:
                 return False
 
-            self.data[key]["expiry"] = (
+            self.data[key].expiry = (
                 int(time.time()) + int(seconds)
             )
 
@@ -131,7 +128,7 @@ class Store:
 
             for key, entry in self.data.items():
 
-                expiry = entry.get("expiry")
+                expiry = entry.expiry
 
                 if expiry is not None and expiry <= now:
                     expired_keys.append(key)

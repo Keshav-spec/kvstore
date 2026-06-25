@@ -1,6 +1,6 @@
 from server.parser import RESPParser
 from commands.registry import dispatch
-
+from config import BUFFER_SIZE
 
 parser = RESPParser()
 
@@ -11,7 +11,7 @@ def handle_client(conn, store):
     try:
         while True:
 
-            data = conn.recv(4096)
+            data = conn.recv(BUFFER_SIZE)
 
             if not data:
                 break

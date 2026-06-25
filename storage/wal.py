@@ -1,9 +1,9 @@
 import os
-
+from config import WAL_FILE
 
 class WriteAheadLog:
 
-    def __init__(self, filename="wal.log"):
+    def __init__(self, filename=WAL_FILE):
 
         self.filename = filename
 

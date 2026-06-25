@@ -1,6 +1,6 @@
 import threading
 import time
-
+from config import TTL_CLEAN_INTERVAL
 
 class ExpiryCleaner:
 
@@ -29,4 +29,4 @@ class ExpiryCleaner:
 
             self.store.cleanup_expired()
 
-            time.sleep(1)
+            time.sleep(TTL_CLEAN_INTERVAL)
